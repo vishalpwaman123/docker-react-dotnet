@@ -1,0 +1,10 @@
+# Local build output - Windows binaries, useless in a Linux container
+# and can collide with the container's own build.
+**/bin/
+**/obj/
+
+# Visual Studio editor state.
+**/.vs/
+
+# Per-developer machine-local settings.
+**/*.user
