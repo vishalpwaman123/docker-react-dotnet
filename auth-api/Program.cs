@@ -1,9 +1,9 @@
 using AuthApi.Data;
-using AuthApi.DTOs;
 using AuthApi.Middleware;
 using AuthApi.Models;
 using AuthApi.Repositories;
 using AuthApi.Services;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -22,6 +22,8 @@ string connectionString = builder.Configuration.GetConnectionString("DefaultConn
 
 builder.Services.AddDbContext<AuthDbContext>(options =>
     options.UseSqlServer(connectionString));
+
+builder.Services.AddApplicationInsightsTelemetry();
 
 // ---------------------------------------------------------------------
 // 2. Our own classes, registered for dependency injection.
@@ -72,6 +74,11 @@ var app = builder.Build();
 // 5. The request pipeline. Order matters here.
 // ---------------------------------------------------------------------
 
+app.UseForwardedHeaders(new ForwardedHeadersOptions
+{
+    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+});
+
 // Our global error handler goes first so it can catch everything after it.
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
@@ -85,5 +92,16 @@ if (app.Environment.IsDevelopment())
 app.UseCors(ReactAppCorsPolicy);
 
 app.MapControllers();
+
+app.MapGet("/health", () => Results.Ok(new { status = "healthy" }))
+   .ExcludeFromDescription();
+
+if (app.Environment.IsDevelopment())
+{
+    using var scope = app.Services.CreateScope();
+    var db = scope.ServiceProvider.GetRequiredService<AuthDbContext>();
+    db.Database.Migrate();
+}
+
 
 app.Run();

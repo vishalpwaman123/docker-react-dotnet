@@ -1,0 +1,22 @@
+# Build output
+**/bin/
+**/obj/
+
+# Visual Studio editor state.
+**/.vs/
+
+# Per-developer machine-local settings.
+**/*.user
+**/*.suo
+
+# Rider / VS Code editor state.
+.idea/
+.vscode/
+
+# Local secrets and machine-local overrides.
+appsettings.*.local.json
+*.pfx
+
+# Logs and test output.
+*.log
+TestResults/
